@@ -1,0 +1,9 @@
+bin/
+obj/
+out/
+publish/
+*.zip
+*.user
+.vs/
+AirGlass-Setup*.exe
+*.deb
