@@ -1,3 +1,16 @@
+<p align="center">
+  <img src="assets/banner.svg" alt="AirGlass banner" width="100%"/>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0a0e1a?style=flat-square&logo=windows&logoColor=4f8dff" alt="Windows 10/11"/>
+  <img src="https://img.shields.io/badge/.NET-8-0a0e1a?style=flat-square&logo=dotnet&logoColor=4f8dff" alt=".NET 8"/>
+  <img src="https://img.shields.io/badge/license-MIT-0a0e1a?style=flat-square" alt="MIT"/>
+  <img src="https://img.shields.io/badge/engine-GPLv3-0a0e1a?style=flat-square" alt="Engine GPLv3"/>
+</p>
+
+<p align="center"><a href="https://mjanthony819.github.io/airglass/"><b>Download page</b></a> &middot; <a href="../../releases/latest"><b>Latest release</b></a></p>
+
 # AirGlass — iPhone mirroring for Windows
 
 View your iPhone or iPad screen on a Windows 10/11 PC over AirPlay. Free and
@@ -17,9 +30,10 @@ log.
 
 ## Install
 
-1. Download `AirGlass-Setup-1.0.0.exe` from
-   [Releases](https://github.com/mjanthony819/airglass/releases).
-2. Run it. Windows SmartScreen may warn because the installer is not
+1. Download
+   [`AirGlass-Setup-1.0.0.exe`](https://github.com/mjanthony819/airglass/releases/download/v1.0.0/AirGlass-Setup-1.0.0.exe)
+   (from the [latest release](../../releases/latest)) and run it.
+2. Windows SmartScreen may warn because the installer is not
    code-signed; click **More info → Run anyway**.
 3. Start AirGlass and click **Download engine** (one-time, ~80 MB). The app
    verifies the download's SHA-256 against the checksum published in the
