@@ -173,18 +173,11 @@ document.getElementById('themeToggle').addEventListener('click',function(){
 var h=document.documentElement;var n=h.getAttribute('data-theme')==='dark'?'light':'dark';
 h.setAttribute('data-theme',n);try{localStorage.setItem('theme',n)}catch(e){}});
 </script>
-<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
 <script>
 window.addEventListener('DOMContentLoaded',function(){
 if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-var lenis=null;
-if(window.Lenis){lenis=new Lenis({duration:1.05,smoothWheel:true});
-requestAnimationFrame(function raf(t){lenis.raf(t);requestAnimationFrame(raf)});}
-if(lenis){document.querySelectorAll('a[href^="#"]').forEach(function(a){
-a.addEventListener('click',function(e){var id=a.getAttribute('href');
-if(id.length>1&&document.querySelector(id)){e.preventDefault();lenis.scrollTo(id,{offset:-72});}});});}
 if(window.gsap&&window.ScrollTrigger){gsap.registerPlugin(ScrollTrigger);
 gsap.fromTo('.hero .eyebrow, .hero h1, .hero .lede, .hero .cta, .hero .meta',
 {opacity:0,y:18},{opacity:1,y:0,duration:.7,stagger:.08,ease:'power2.out'});
