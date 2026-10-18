@@ -22,18 +22,33 @@ for p in $PLUGINS; do
   fi
 done
 
+collect_deps() {
+  # Print absolute paths of DLLs a binary links against (MSYS2 ldd output).
+  ldd "$1" 2>/dev/null | awk '/=>/ && $3 ~ /^\// {print $3}' || true
+}
+
 # Copy every MSYS2 DLL that uxplay.exe or any bundled plugin links against,
-# resolving transitively (two passes cover deps of deps).
+# resolving transitively (three passes cover deps of deps).
 for pass in 1 2 3; do
   {
-    ldd "$OUT/uxplay.exe" 2>/dev/null | awk '/=>/ {print $3}'
+    collect_deps "$OUT/uxplay.exe"
     for f in "$OUT"/lib/gstreamer-1.0/*.dll "$OUT"/*.dll; do
-      [ -f "$f" ] && ldd "$f" 2>/dev/null | awk '/=>/ {print $3}'
+      [ -f "$f" ] || continue
+      collect_deps "$f"
     done
-  } | grep -i "^$PREFIX" | sort -u | while read -r dep; do
+    true   # keep the group status clean even if the last glob matched nothing
+  } | { grep -i "^$PREFIX" || true; } | sort -u | while read -r dep; do
     base="$(basename "$dep")"
-    [ -f "$OUT/$base" ] || cp "$dep" "$OUT/"
+    if [ ! -f "$OUT/$base" ]; then
+      cp "$dep" "$OUT/" || echo "::warning::could not copy $dep"
+    fi
   done
+done
+
+# Sanity: the core runtime libraries must have been collected, or ldd parsing
+# broke and the bundle would be useless.
+for core in libgstreamer-1.0-0.dll libglib-2.0-0.dll libcrypto-3-x64.dll libplist-2.0.dll; do
+  [ -f "$OUT/$core" ] || { echo "::error::core runtime DLL missing from bundle: $core"; exit 1; }
 done
 
 cat > "$OUT/VERSION.txt" <<VER
@@ -42,7 +57,6 @@ UxPlay (upstream FDH2/UxPlay): $VERSION
 Built by GitHub Actions on $(date -u +%Y-%m-%d) from unmodified source.
 UxPlay is GPLv3: source at https://github.com/FDH2/UxPlay
 VER
-cp "$(dirname "$0")/../engine-licenses/"*.txt "$OUT/" 2>/dev/null || true
 
 echo "Bundle contents:"
 ls "$OUT" | head -50
