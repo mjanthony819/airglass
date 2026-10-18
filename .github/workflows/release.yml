@@ -1,0 +1,64 @@
+name: Release app
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version tag
+        default: v1.0.0
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Run unit tests
+        run: dotnet test -c Release
+
+      - name: Publish single-file app
+        run: |
+          dotnet publish src/AirGlass -c Release -r win-x64 --self-contained `
+            -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+
+      - name: Install NSIS
+        run: choco install nsis -y --no-progress
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $v = "${{ inputs.version }}".TrimStart("v")
+          & "C:\Program Files (x86)\NSIS\makensis.exe" "-DPUBLISH_DIR=publish" "-DVERSION=$v" installer/AirGlass.nsi
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Move-Item "installer/AirGlass-Setup-$v.exe" -Destination .
+
+      - name: Create GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $v = "${{ inputs.version }}"
+          $vn = $v.TrimStart("v")
+          gh release delete $v --yes --cleanup-tag 2>$null
+          if ($LASTEXITCODE -ne 0) { "no previous $v release" }
+          $notes = @"
+          First release of AirGlass: view your iPhone or iPad screen on a Windows 10/11 PC over AirPlay. Free and open source.
+
+          Download AirGlass-Setup-$vn.exe and run it (SmartScreen: More info, then Run anyway; the installer is not code-signed). On first start click Download engine once; the app verifies the engine checksum before installing. Then Start mirroring and pick your PC's name from Control Centre > Screen Mirroring on the iPhone. Both devices must be on the same Wi-Fi.
+
+          Honest status: app and installer are built and unit-tested and the engine passes a CI smoke test on a real Windows runner, but the full flow has not yet been tested with a physical iPhone on real hardware. View-only (iOS blocks software input injection). DRM apps show a black screen. Expect up to 1080p and roughly 100-300 ms latency.
+
+          Engine: UxPlay (GPLv3) built unmodified from source by this repo's CI (see the engine-latest prerelease). App code: MIT.
+          "@
+          gh release create $v "AirGlass-Setup-$vn.exe" --title "AirGlass $v - iPhone mirroring for Windows" --notes $notes
