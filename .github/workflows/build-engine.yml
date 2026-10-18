@@ -97,7 +97,6 @@ jobs:
             airglass-engine.sha256
 
       - name: Publish the engine-latest prerelease
-        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
