@@ -7,6 +7,9 @@ on:
       - .github/workflows/build-engine.yml
       - scripts/package-engine.sh
 
+permissions:
+  contents: write
+
 env:
   UXPLAY_REPO: https://github.com/FDH2/UxPlay.git
   # Pinned upstream commit (master, internal-mDNS build). Bump deliberately.
