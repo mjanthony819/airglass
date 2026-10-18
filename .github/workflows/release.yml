@@ -32,6 +32,9 @@ jobs:
             -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true `
             -p:IncludeNativeLibrariesForSelfExtract=true -o publish
 
+      - name: Verify publish output
+        run: Test-Path publish/AirGlass.exe
+
       - name: Install NSIS
         run: choco install nsis -y --no-progress
 
@@ -39,9 +42,12 @@ jobs:
         shell: pwsh
         run: |
           $v = "${{ inputs.version }}".TrimStart("v")
-          & "C:\Program Files (x86)\NSIS\makensis.exe" "-DPUBLISH_DIR=publish" "-DVERSION=$v" installer/AirGlass.nsi
+          $pub = Join-Path (Get-Location) "publish"
+          & "C:\Program Files (x86)\NSIS\makensis.exe" "-DPUBLISH_DIR=$pub" "-DVERSION=$v" installer/AirGlass.nsi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Move-Item "installer/AirGlass-Setup-$v.exe" -Destination .
+          $exe = Get-ChildItem -Path . -Recurse -Filter "AirGlass-Setup-$v.exe" | Select-Object -First 1
+          if (!$exe) { Write-Error "AirGlass-Setup-$v.exe not found after makensis"; exit 1 }
+          Move-Item $exe.FullName -Destination . -Force
 
       - name: Create GitHub release
         shell: pwsh
