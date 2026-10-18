@@ -1,0 +1,110 @@
+name: Build engine
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/build-engine.yml
+      - scripts/package-engine.sh
+
+env:
+  UXPLAY_REPO: https://github.com/FDH2/UxPlay.git
+  # Pinned upstream commit (master, internal-mDNS build). Bump deliberately.
+  UXPLAY_COMMIT: 4e95a9ec013c52d8555d88dbc55abe346e94d56e
+  ENGINE_VERSION: 1.74-dev.4e95a9e
+
+jobs:
+  build-engine:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+
+      - name: Install MSYS2 toolchain and GStreamer
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-openssl
+            mingw-w64-ucrt-x86_64-libplist
+            mingw-w64-ucrt-x86_64-gstreamer
+            mingw-w64-ucrt-x86_64-gst-plugins-base
+            mingw-w64-ucrt-x86_64-gst-plugins-good
+            mingw-w64-ucrt-x86_64-gst-plugins-bad
+            mingw-w64-ucrt-x86_64-gst-libav
+            mingw-w64-ucrt-x86_64-pkg-config
+            base-devel
+            git
+            zip
+
+      - name: Check out UxPlay at the pinned commit
+        run: |
+          git clone "$UXPLAY_REPO" uxplay
+          cd uxplay
+          git checkout "$UXPLAY_COMMIT"
+
+      - name: Build uxplay.exe
+        env:
+          PKG_CONFIG_PATH: /ucrt64/lib/pkgconfig
+        run: |
+          cd uxplay
+          cmake -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DNO_X11_DEPS=ON
+          cmake --build build --parallel
+          test -f build/uxplay.exe
+
+      - name: Package portable bundle
+        run: bash scripts/package-engine.sh uxplay/build/uxplay.exe bundle "$ENGINE_VERSION"
+
+      - name: Smoke test the bundle (starts the server, expects it to listen)
+        shell: pwsh
+        run: |
+          $env:PATH = "$PWD\bundle;$env:PATH"
+          $env:GST_PLUGIN_PATH = "$PWD\bundle\lib\gstreamer-1.0"
+          $env:GST_PLUGIN_SYSTEM_PATH = "$PWD\bundle\lib\gstreamer-1.0"
+          $out = "$PWD\smoke-out.log"; $err = "$PWD\smoke-err.log"
+          $p = Start-Process -FilePath "$PWD\bundle\uxplay.exe" `
+               -ArgumentList '-n','AirGlassCI','-nh' `
+               -RedirectStandardOutput $out -RedirectStandardError $err -PassThru
+          Start-Sleep -Seconds 25
+          $alive = !$p.HasExited
+          if ($alive) { Stop-Process -Id $p.Id -Force }
+          "---- stdout ----"; Get-Content $out -ErrorAction SilentlyContinue
+          "---- stderr ----"; Get-Content $err -ErrorAction SilentlyContinue
+          if (!$alive) { Write-Error "uxplay.exe exited before 25s"; exit 1 }
+          $ok = Select-String -Path $out,$err -Pattern 'Initialized server socket' -Quiet
+          if (!$ok) { Write-Error "uxplay.exe did not report a listening socket"; exit 1 }
+
+      - name: Zip bundle and compute checksum
+        run: |
+          cd bundle
+          zip -q -r ../airglass-engine-win-x64.zip .
+          cd ..
+          sha256sum airglass-engine-win-x64.zip | awk '{print $1}' > airglass-engine.sha256
+          cat airglass-engine.sha256
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: airglass-engine-win-x64
+          path: |
+            airglass-engine-win-x64.zip
+            airglass-engine.sha256
+
+      - name: Publish the engine-latest prerelease
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete engine-latest --yes --cleanup-tag 2>$null
+          if ($LASTEXITCODE -ne 0) { "no previous engine-latest release" }
+          gh release create engine-latest airglass-engine-win-x64.zip airglass-engine.sha256 `
+            --title "AirGlass engine ($env:ENGINE_VERSION)" `
+            --notes "UxPlay built unmodified from FDH2/UxPlay@$env:UXPLAY_COMMIT (GPLv3, source linked in README). airglass-engine.sha256 holds the zip SHA-256 that the AirGlass app verifies before installing." `
+            --prerelease
