@@ -14,6 +14,9 @@ RequestExecutionLevel user
 InstallDir "$LOCALAPPDATA\Programs\AirGlass"
 SetCompressor /SOLID lzma
 
+Icon "${__FILEDIR__}\..\assets\airglass.ico"
+UninstallIcon "${__FILEDIR__}\..\assets\airglass.ico"
+
 Page directory
 Page instfiles
 UninstPage uninstConfirm
@@ -32,6 +35,8 @@ Section "Install"
     "DisplayName" "AirGlass"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirGlass" \
     "DisplayVersion" "${VERSION}"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirGlass" \
+    "DisplayIcon" "$INSTDIR\AirGlass.exe,0"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirGlass" \
     "Publisher" "M J Anthony"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirGlass" \
