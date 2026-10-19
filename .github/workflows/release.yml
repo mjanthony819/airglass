@@ -36,18 +36,28 @@ jobs:
         run: Test-Path publish/AirGlass.exe
 
       - name: Install NSIS
-        run: choco install nsis -y --no-progress
+        shell: pwsh
+        run: |
+          choco install nsis -y --no-progress
+          $mkExe = $null
+          foreach ($c in @("C:\Program Files (x86)\NSIS\makensis.exe", "C:\Program Files\NSIS\makensis.exe")) { if (Test-Path $c) { $mkExe = $c; break } }
+          if (!$mkExe) {
+            "choco did not produce makensis.exe; falling back to the official portable zip"
+            $zip = Join-Path $env:RUNNER_TEMP "nsis.zip"
+            Invoke-WebRequest -Uri "https://downloads.sourceforge.net/project/nsis/NSIS%203/3.13/nsis-3.13.zip" -OutFile $zip -MaximumRedirection 10
+            Expand-Archive $zip -DestinationPath (Join-Path $env:RUNNER_TEMP "nsis")
+            $mkExe = (Get-ChildItem (Join-Path $env:RUNNER_TEMP "nsis") -Recurse -Filter makensis.exe | Select-Object -First 1).FullName
+          }
+          if (!$mkExe) { Write-Error "makensis.exe unavailable from choco and portable zip"; exit 1 }
+          "makensis at $mkExe"
+          "NSIS_MAKENSIS=$mkExe" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Build installer
         shell: pwsh
         run: |
           $v = "${{ inputs.version }}".TrimStart("v")
           $pub = Join-Path (Get-Location) "publish"
-          $mkExe = $null
-          foreach ($c in @("C:\Program Files (x86)\NSIS\makensis.exe", "C:\Program Files\NSIS\makensis.exe")) { if (Test-Path $c) { $mkExe = $c; break } }
-          if (!$mkExe) { $mkExe = (Get-Command makensis.exe -ErrorAction SilentlyContinue).Source }
-          if (!$mkExe) { Write-Error "makensis.exe not found after choco install nsis"; exit 1 }
-          & $mkExe "-DPUBLISH_DIR=$pub" "-DVERSION=$v" installer/AirGlass.nsi
+          & $env:NSIS_MAKENSIS "-DPUBLISH_DIR=$pub" "-DVERSION=$v" installer/AirGlass.nsi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $exe = Get-ChildItem -Path . -Recurse -Filter "AirGlass-Setup-$v.exe" | Select-Object -First 1
           if (!$exe) { Write-Error "AirGlass-Setup-$v.exe not found after makensis"; exit 1 }
