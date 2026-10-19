@@ -67,6 +67,11 @@ public sealed class MainForm : Form
         MinimumSize = new Size(560, 480);
         StartPosition = FormStartPosition.CenterScreen;
 
+        Icon appIcon;
+        try { appIcon = Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? SystemIcons.Application; }
+        catch { appIcon = SystemIcons.Application; }
+        Icon = appIcon;
+
         var root = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
@@ -136,7 +141,7 @@ public sealed class MainForm : Form
         _tray = new NotifyIcon
         {
             Text = "AirGlass",
-            Icon = SystemIcons.Application,
+            Icon = appIcon,
             Visible = false,
             ContextMenuStrip = BuildTrayMenu(),
         };
