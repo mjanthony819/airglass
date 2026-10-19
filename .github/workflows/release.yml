@@ -43,7 +43,11 @@ jobs:
         run: |
           $v = "${{ inputs.version }}".TrimStart("v")
           $pub = Join-Path (Get-Location) "publish"
-          & "C:\Program Files (x86)\NSIS\makensis.exe" "-DPUBLISH_DIR=$pub" "-DVERSION=$v" installer/AirGlass.nsi
+          $mkExe = $null
+          foreach ($c in @("C:\Program Files (x86)\NSIS\makensis.exe", "C:\Program Files\NSIS\makensis.exe")) { if (Test-Path $c) { $mkExe = $c; break } }
+          if (!$mkExe) { $mkExe = (Get-Command makensis.exe -ErrorAction SilentlyContinue).Source }
+          if (!$mkExe) { Write-Error "makensis.exe not found after choco install nsis"; exit 1 }
+          & $mkExe "-DPUBLISH_DIR=$pub" "-DVERSION=$v" installer/AirGlass.nsi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $exe = Get-ChildItem -Path . -Recurse -Filter "AirGlass-Setup-$v.exe" | Select-Object -First 1
           if (!$exe) { Write-Error "AirGlass-Setup-$v.exe not found after makensis"; exit 1 }
