@@ -59,7 +59,7 @@ jobs:
           gh release delete $v --yes --cleanup-tag 2>$null
           if ($LASTEXITCODE -ne 0) { "no previous $v release" }
           $notes = @"
-          First release of AirGlass: view your iPhone or iPad screen on a Windows 10/11 PC over AirPlay. Free and open source.
+          AirGlass v1.0.1: new app icon and branding across the app, installer and download page. Same engine, same features as v1.0.0.
 
           Download AirGlass-Setup-$vn.exe and run it (SmartScreen: More info, then Run anyway; the installer is not code-signed). On first start click Download engine once; the app verifies the engine checksum before installing. Then Start mirroring and pick your PC's name from Control Centre > Screen Mirroring on the iPhone. Both devices must be on the same Wi-Fi.
 
