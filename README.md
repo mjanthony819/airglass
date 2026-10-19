@@ -31,7 +31,7 @@ log.
 ## Install
 
 1. Download
-   [`AirGlass-Setup-1.0.0.exe`](https://github.com/mjanthony819/airglass/releases/download/v1.0.0/AirGlass-Setup-1.0.0.exe)
+   [`AirGlass-Setup-1.0.1.exe`](https://github.com/mjanthony819/airglass/releases/download/v1.0.1/AirGlass-Setup-1.0.1.exe)
    (from the [latest release](../../releases/latest)) and run it.
 2. Windows SmartScreen may warn because the installer is not
    code-signed; click **More info → Run anyway**.
