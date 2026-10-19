@@ -14,8 +14,8 @@ RequestExecutionLevel user
 InstallDir "$LOCALAPPDATA\Programs\AirGlass"
 SetCompressor /SOLID lzma
 
-Icon "${__FILEDIR__}\..\assets\airglass.ico"
-UninstallIcon "${__FILEDIR__}\..\assets\airglass.ico"
+Icon "..\assets\airglass.ico"
+UninstallIcon "..\assets\airglass.ico"
 
 Page directory
 Page instfiles
