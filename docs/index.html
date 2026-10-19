@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AirGlass — iPhone mirroring for Windows</title>
 <meta name="description" content="View your iPhone or iPad screen on a Windows 10/11 PC over AirPlay. Free and open source.">
+<link rel="icon" type="image/png" href="icon-tile.png">
+<link rel="apple-touch-icon" href="icon-tile.png">
+<meta property="og:title" content="AirGlass — iPhone mirroring for Windows">
+<meta property="og:description" content="View your iPhone or iPad screen on a Windows 10/11 PC over AirPlay. Free and open source.">
+<meta property="og:image" content="https://mjanthony819.github.io/airglass/og-image.png">
+<meta property="og:url" content="https://mjanthony819.github.io/airglass/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,340;0,9..144,480;0,9..144,560;1,9..144,400&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -26,6 +34,13 @@ a:hover{text-decoration:underline}
 nav{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
 nav .wrap{display:flex;align-items:center;gap:28px;height:60px}
 .brand{font-family:'Fraunces',serif;font-weight:560;font-size:19px;letter-spacing:.01em;color:var(--ink)}
+.brand{display:inline-flex;align-items:center;gap:9px}
+.brand img{height:26px;width:auto}
+.logo-dark{display:none}
+[data-theme="dark"] .logo-dark{display:inline-block}
+[data-theme="dark"] .logo-light{display:none}
+.hero-logo{margin:0 0 26px}
+.hero-logo img{height:110px;width:auto}
 .brand:hover{text-decoration:none}
 .navlinks{display:flex;gap:22px;margin-left:auto;font-size:14.5px;color:var(--ink-2)}
 .navlinks a{color:var(--ink-2)}
@@ -85,7 +100,7 @@ footer .links{display:flex;gap:20px}
 </head>
 <body>
 <nav><div class="wrap">
-<a class="brand" href="#">AirGlass</a>
+<a class="brand" href="#"><img class="logo-light" src="https://raw.githubusercontent.com/mjanthony819/airglass/main/assets/icon.png" alt=""><img class="logo-dark" src="https://raw.githubusercontent.com/mjanthony819/airglass/main/assets/icon-dark.png" alt="">AirGlass</a>
 <div class="navlinks">
 <a href="#how">How it works</a>
 <a href="#limits">Honest limits</a>
@@ -99,6 +114,7 @@ footer .links{display:flex;gap:20px}
 </div></nav>
 
 <header class="hero"><div class="wrap">
+<p class="hero-logo"><img class="logo-light" src="https://raw.githubusercontent.com/mjanthony819/airglass/main/assets/logo.png" alt="AirGlass logo"><img class="logo-dark" src="https://raw.githubusercontent.com/mjanthony819/airglass/main/assets/logo-dark.png" alt="AirGlass logo"></p>
 <p class="eyebrow">AirGlass · Windows 10/11 · Free &amp; open source</p>
 <h1>Your iPhone screen, <em>on your PC.</em></h1>
 <p class="lede">AirGlass turns a Windows PC into an AirPlay receiver. Open Control Centre on your iPhone, tap Screen Mirroring, pick your PC — and the screen appears in a window on your desktop. No cable, no account, nothing on the phone.</p>
