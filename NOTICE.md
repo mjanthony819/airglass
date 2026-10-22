@@ -1,6 +1,6 @@
 # Third-party notices
 
-AirGlass (this repository's C# code) is MIT-licensed (see LICENSE).
+AirGlass (this repository's C# code) is licensed under the PolyForm Noncommercial License 1.0.0 (see LICENSE).
 
 ## UxPlay (mirroring engine)
 
