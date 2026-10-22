@@ -5,7 +5,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0a0e1a?style=flat-square&logo=windows&logoColor=4f8dff" alt="Windows 10/11"/>
   <img src="https://img.shields.io/badge/.NET-8-0a0e1a?style=flat-square&logo=dotnet&logoColor=4f8dff" alt=".NET 8"/>
-  <img src="https://img.shields.io/badge/license-MIT-0a0e1a?style=flat-square" alt="MIT"/>
+  <img src="https://img.shields.io/badge/license-PolyForm%20Noncommercial-0a0e1a?style=flat-square" alt="PolyForm Noncommercial 1.0.0"/>
   <img src="https://img.shields.io/badge/engine-GPLv3-0a0e1a?style=flat-square" alt="Engine GPLv3"/>
 </p>
 
@@ -13,8 +13,8 @@
 
 # AirGlass — iPhone mirroring for Windows
 
-View your iPhone or iPad screen on a Windows 10/11 PC over AirPlay. Free and
-open source (app: MIT, engine: GPLv3).
+View your iPhone or iPad screen on a Windows 10/11 PC over AirPlay. Free for
+noncommercial use (app: PolyForm Noncommercial 1.0.0, engine: GPLv3).
 
 AirGlass is a Windows control panel around [UxPlay](https://github.com/FDH2/UxPlay),
 the open-source AirPlay receiver. AirGlass builds the engine from unmodified
@@ -120,6 +120,6 @@ Bonjour dependency).
 
 ## Licenses
 
-AirGlass (C# code): MIT. Engine (UxPlay): GPLv3 — it is built from unmodified
+AirGlass (C# code): [PolyForm Noncommercial License 1.0.0](LICENSE). Third-party components keep their own licenses. Engine (UxPlay): GPLv3 — it is built from unmodified
 source and downloaded separately; see [NOTICE.md](NOTICE.md) for the full
 attribution and license breakdown.
