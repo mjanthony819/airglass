@@ -79,6 +79,6 @@ jobs:
 
           Honest status: app and installer are built and unit-tested and the engine passes a CI smoke test on a real Windows runner, but the full flow has not yet been tested with a physical iPhone on real hardware. View-only (iOS blocks software input injection). DRM apps show a black screen. Expect up to 1080p and roughly 100-300 ms latency.
 
-          Engine: UxPlay (GPLv3) built unmodified from source by this repo's CI (see the engine-latest prerelease). App code: MIT.
+          Engine: UxPlay (GPLv3) built unmodified from source by this repo's CI (see the engine-latest prerelease). App code: PolyForm Noncommercial 1.0.0.
           "@
           gh release create $v "AirGlass-Setup-$vn.exe" --title "AirGlass $v - iPhone mirroring for Windows" --notes $notes
