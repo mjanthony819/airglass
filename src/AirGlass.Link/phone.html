@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>AirGlass Link</title>
+<style>
+:root{color-scheme:light dark;--bg:#fff;--fg:#111;--mut:#667;--card:#f2f3f5;--acc:#1a73e8}
+@media(prefers-color-scheme:dark){:root{--bg:#111;--fg:#eee;--mut:#99a;--card:#222;--acc:#8ab4f8}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font:16px -apple-system,system-ui,sans-serif;background:var(--bg);color:var(--fg);padding:env(safe-area-inset-top) 12px 24px}
+h1{font-size:20px;margin:14px 0 4px}p.m{color:var(--mut);margin:4px 0 12px;font-size:14px}
+.card{background:var(--card);border-radius:14px;padding:12px;margin:10px 0}
+button,input,textarea{font:inherit;border-radius:10px;border:1px solid #8884;padding:10px;background:var(--bg);color:var(--fg)}
+button{background:var(--acc);color:#fff;border:0;font-weight:600}button.s{background:#8883;color:var(--fg)}
+input,textarea{width:100%}
+#pad{height:32vh;border-radius:14px;background:#8882;touch-action:none;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;font-size:14px;color:var(--mut);user-select:none;-webkit-user-select:none}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.row>*{flex:1}
+#st{font-size:13px;color:var(--mut)}#err{color:#d33;font-size:14px;min-height:18px}
+ul{list-style:none;padding:0;margin:6px 0}li{padding:8px 0;border-bottom:1px solid #8883;display:flex;justify-content:space-between;gap:8px}
+a{color:var(--acc)}
+</style></head><body>
+<h1>AirGlass Link</h1><p class="m" id="st">Not connected</p><div id="err"></div>
+<div id="pair" class="card" hidden>
+<p class="m">Enter the 6-digit code shown in AirGlass on your PC. You then approve this phone on the PC.</p>
+<input id="code" inputmode="numeric" maxlength="6" placeholder="123456" autocomplete="off">
+<div class="row"><button id="go">Pair</button></div></div>
+<div id="main" hidden>
+<div id="pad">Touchpad: drag to move, tap to click, two-finger tap = right click, two-finger drag = scroll</div>
+<div class="row"><button class="s" id="lc">Left click</button><button class="s" id="dc">Double click</button><button class="s" id="rc">Right click</button></div>
+<div class="card"><textarea id="txt" rows="2" placeholder="Type text to send to the PC"></textarea>
+<div class="row"><button id="sendtxt">Type on PC</button><button class="s" id="sendclip">Send as clipboard</button></div>
+<div class="row"><button class="s" data-k="backspace">Backspace</button><button class="s" data-k="enter">Enter</button><button class="s" data-k="tab">Tab</button><button class="s" data-k="escape">Esc</button></div>
+<div class="row"><button class="s" data-k="left">&larr;</button><button class="s" data-k="up">&uarr;</button><button class="s" data-k="down">&darr;</button><button class="s" data-k="right">&rarr;</button></div>
+<div class="row"><button class="s" id="getclip">Get PC clipboard</button></div><div id="clipout" class="m"></div></div>
+<div class="card"><b>Files</b><div class="row"><input id="file" type="file" multiple></div>
+<div class="row"><button id="up">Send to PC</button><button class="s" id="refresh">Refresh PC files</button></div><ul id="files"></ul></div>
+<div class="row"><button class="s" id="forget">Forget this phone</button></div></div>
+<script>
+const $=id=>document.getElementById(id);let token=localStorage.getItem('agtoken'),ws=null;
+const H=()=>({'Authorization':'Bearer '+token,'X-AG':'1'});
+function err(m){$('err').textContent=m||''}
+async function me(){if(!token)return false;try{const r=await fetch('/api/me',{headers:H()});if(!r.ok)return false;const j=await r.json();$('st').textContent='Connected as '+j.device+(j.input?'':' (input paused on PC)');return true}catch(e){return false}}
+function connect(){ws=new WebSocket('wss://'+location.host+'/ws');ws.onopen=()=>ws.send(JSON.stringify({auth:token}));ws.onclose=()=>{$('st').textContent='Disconnected. Tap to reconnect.'};}
+function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))}
+async function show(){if(await me()){$('pair').hidden=true;$('main').hidden=false;connect();list()}else{token=null;localStorage.removeItem('agtoken');$('main').hidden=true;$('pair').hidden=false;$('st').textContent='Not connected'}}
+$('go').onclick=async()=>{err('');$('go').disabled=true;try{const r=await fetch('/api/pair',{method:'POST',headers:{'Content-Type':'application/json','X-AG':'1'},body:JSON.stringify({code:$('code').value.trim(),name:navigator.platform==='iPhone'?'iPhone':'Phone'})});const j=await r.json();if(!r.ok){err(j.error==='LockedOut'?'Too many tries. Wait a minute and get a new code.':'Wrong or expired code.');return}
+$('st').textContent='Waiting for approval on the PC...';for(let i=0;i<60;i++){await new Promise(s=>setTimeout(s,2000));const p=await(await fetch('/api/pair/'+j.id)).json();if(p.status==='approved'){token=p.token;localStorage.setItem('agtoken',token);return show()}if(p.status==='denied'){err('The PC denied this phone.');return}}err('Approval timed out.')}catch(e){err('Cannot reach the PC.')}finally{$('go').disabled=false}};
+// touchpad
+const pad=$('pad');let last=null,moved=0,t0=0,maxT=0,sy=null;
+pad.addEventListener('touchstart',e=>{e.preventDefault();maxT=Math.max(maxT,e.touches.length);if(e.touches.length===1){t0=Date.now();moved=0;}last=[...e.touches].map(t=>[t.clientX,t.clientY]);sy=null},{passive:false});
+pad.addEventListener('touchmove',e=>{e.preventDefault();const c=[...e.touches].map(t=>[t.clientX,t.clientY]);if(c.length===1&&last&&last.length===1){const dx=Math.round((c[0][0]-last[0][0])*1.6),dy=Math.round((c[0][1]-last[0][1])*1.6);moved+=Math.abs(dx)+Math.abs(dy);if(dx||dy)send({t:'move',dx,dy})}else if(c.length===2&&last&&last.length===2){const y=(c[0][1]+c[1][1])/2,py=(last[0][1]+last[1][1])/2;moved+=Math.abs(y-py);const d=Math.round((py-y)/4);if(d)send({t:'scroll',dy:d})}last=c},{passive:false});
+pad.addEventListener('touchend',e=>{e.preventDefault();if(e.touches.length===0){if(Date.now()-t0<250&&moved<8){send({t:'click',b:maxT>=2?'right':'left'})}maxT=0;last=null}},{passive:false});
+$('lc').onclick=()=>send({t:'click',b:'left'});$('rc').onclick=()=>send({t:'click',b:'right'});$('dc').onclick=()=>send({t:'click',b:'double'});
+document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>send({t:'key',k:b.dataset.k}));
+$('sendtxt').onclick=()=>{const s=$('txt').value;if(s){send({t:'text',s:s.slice(0,500)});$('txt').value=''}};
+$('sendclip').onclick=async()=>{const s=$('txt').value;if(!s)return;const r=await fetch('/api/clip',{method:'POST',headers:H(),body:s});err(r.ok?'':'Could not set PC clipboard');if(r.ok)$('txt').value=''};
+$('getclip').onclick=async()=>{const r=await fetch('/api/clip',{headers:H()});const t=await r.text();$('clipout').textContent=t?t.slice(0,500):'(PC clipboard has no text)';if(t){try{await navigator.clipboard.writeText(t)}catch(e){}}};
+$('up').onclick=async()=>{err('');for(const f of $('file').files){const r=await fetch('/api/files',{method:'POST',headers:{...H(),'X-Filename':encodeURIComponent(f.name)},body:f});if(!r.ok){err('Failed: '+f.name);return}}$('file').value='';err('Sent.')};
+async function list(){const r=await fetch('/api/files',{headers:H()});if(!r.ok)return;const l=await r.json();const ul=$('files');ul.textContent='';for(const f of l){const li=document.createElement('li');const a=document.createElement('a');a.textContent=f.name;a.href='#';a.onclick=async ev=>{ev.preventDefault();const rr=await fetch('/api/files/'+encodeURIComponent(f.name),{headers:H()});if(!rr.ok)return err('Download failed');const u=URL.createObjectURL(await rr.blob());const x=document.createElement('a');x.href=u;x.download=f.name;x.click();setTimeout(()=>URL.revokeObjectURL(u),30000)};li.appendChild(a);const s=document.createElement('span');s.textContent=Math.ceil(f.bytes/1024)+' KB';li.appendChild(s);ul.appendChild(li)}}
+$('refresh').onclick=list;
+$('forget').onclick=()=>{localStorage.removeItem('agtoken');token=null;if(ws)ws.close();show()};
+$('st').onclick=()=>{if(token&&(!ws||ws.readyState>1))connect()};
+show();
+</script></body></html>
