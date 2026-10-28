@@ -123,3 +123,13 @@ Bonjour dependency).
 AirGlass (C# code): [PolyForm Noncommercial License 1.0.0](LICENSE). Third-party components keep their own licenses. Engine (UxPlay): GPLv3 — it is built from unmodified
 source and downloaded separately; see [NOTICE.md](NOTICE.md) for the full
 attribution and license breakdown.
+
+## iPhone Link (in development, not released)
+
+Branch `airglass-link` adds an optional Link mode: an iPhone web page in Safari that works as a trackpad, keyboard, text and file drop for the PC. Pairing needs a 6-digit code shown on the PC plus an Approve click on the PC.
+
+Status, honestly:
+- Built and covered by automated tests (pairing, file safety, input parser, a real HTTPS/WebSocket server) that pass on a Windows CI runner.
+- Link does not start yet: it needs an HTTPS certificate that the iPhone already trusts, and that choice is not made. There is no plain-HTTP mode.
+- Not yet tried on a real iPhone or a real Windows desktop session.
+- Not offered: controlling the iPhone from the PC, phone calls (use Microsoft Phone Link), automatic background clipboard sync (iOS restricts it).
