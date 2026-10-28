@@ -101,7 +101,7 @@ public sealed class LinkForm : Form
                 _pending.Items.Add($"{d.DeviceName}  ({d.Id[..4]})");
                 Log($"Pairing request from \"{d.DeviceName}\". Approve only if you just entered the code on your phone.");
             });
-            await s.StartAsync(cert, 47800);
+            await s.StartAsync(cert, 47800, _certs.BindAddress);
             _server = s;
             _state.Text = "Link is on";
             _toggle.Text = "Stop Link";
