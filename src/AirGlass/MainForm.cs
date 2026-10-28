@@ -151,7 +151,7 @@ public sealed class MainForm : Form
         _startButton.Click += (_, _) => StartMirroring();
         _stopButton.Click += (_, _) => StopMirroring();
         _downloadButton.Click += async (_, _) => await DownloadEngineAsync();
-        _linkButton.Click += (_, _) => { using var f = new LinkForm(new AirGlass.Link.NoCertificateProvider()); f.ShowDialog(this); };
+        _linkButton.Click += (_, _) => { using var f = new LinkForm(new AirGlass.Link.TailscaleCertificateProvider()); f.ShowDialog(this); };
         copyLog.Click += (_, _) =>
         {
             if (_logBox.TextLength > 0) Clipboard.SetText(_logBox.Text);
