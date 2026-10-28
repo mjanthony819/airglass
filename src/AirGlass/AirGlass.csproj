@@ -16,5 +16,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\AirGlass.Core\AirGlass.Core.csproj" />
+    <ProjectReference Include="..\AirGlass.Link\AirGlass.Link.csproj" />
   </ItemGroup>
 </Project>
