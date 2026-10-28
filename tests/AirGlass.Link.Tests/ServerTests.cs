@@ -210,3 +210,59 @@ public class ServerTests : IClassFixture<Fixture>
         await Assert.ThrowsAsync<ArgumentNullException>(() => s.StartAsync(null!, 1234));
     }
 }
+
+public class TailscaleProviderTests
+{
+    private sealed class Fake(string? exe, int code, string output) : ICommandRunner
+    {
+        public List<string[]> Calls = new();
+        public string? FindTailscale() => exe;
+        public (int ExitCode, string Output) Run(string file, params string[] args) { Calls.Add(args); return (code, output); }
+    }
+
+    private const string Good = "{\"BackendState\":\"Running\",\"CertDomains\":[\"pc.tail1234.ts.net\"],\"Self\":{\"DNSName\":\"pc.tail1234.ts.net.\",\"TailscaleIPs\":[\"100.64.1.2\",\"fd7a::1\"]}}";
+
+    [Fact]
+    public void Good_status_gives_name_and_tailscale_address_only()
+    {
+        var s = TailscaleCertificateProvider.ParseStatus(Good);
+        Assert.Null(s.Problem);
+        Assert.Equal("pc.tail1234.ts.net", s.CertDomain);
+        Assert.Equal("100.64.1.2", s.Ip4!.ToString());
+    }
+
+    [Theory]
+    [InlineData("{\"BackendState\":\"NeedsLogin\"}", "not connected")]
+    [InlineData("{\"BackendState\":\"Running\",\"Self\":{\"TailscaleIPs\":[\"100.64.1.2\"]}}", "HTTPS certificates are not enabled")]
+    [InlineData("{\"BackendState\":\"Running\",\"CertDomains\":[\"a b;rm.ts.net\"],\"Self\":{\"TailscaleIPs\":[\"100.64.1.2\"]}}", "unexpected name")]
+    [InlineData("not json", "Could not read")]
+    public void Bad_states_give_plain_problems(string json, string contains) =>
+        Assert.Contains(contains, TailscaleCertificateProvider.ParseStatus(json).Problem!);
+
+    [Fact]
+    public void Missing_tailscale_is_explained()
+    {
+        var p = new TailscaleCertificateProvider(new Fake(null, 0, ""));
+        Assert.Null(p.TryGetCertificate(out var problem));
+        Assert.Contains("not installed", problem);
+        Assert.Null(p.BindAddress);
+    }
+
+    [Fact]
+    public void Cert_command_failure_is_reported_and_no_cert_returned()
+    {
+        var f = new Fake("ts", 1, "boom");
+        var p = new TailscaleCertificateProvider(f, Path.Combine(Path.GetTempPath(), "agc-" + Guid.NewGuid().ToString("N")));
+        Assert.Null(p.TryGetCertificate(out var problem));
+        Assert.Contains("status", f.Calls[0]);
+    }
+
+    [Theory]
+    [InlineData("pc.tail1234.ts.net", true)]
+    [InlineData("a.b", false)]
+    [InlineData("-bad.ts.net", false)]
+    [InlineData("x y.ts.net", false)]
+    [InlineData("x;calc.ts.net", false)]
+    public void Host_names_are_validated_before_use_in_a_command(string n, bool ok) =>
+        Assert.Equal(ok, TailscaleCertificateProvider.IsSafeHostName(n));
+}
