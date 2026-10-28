@@ -41,7 +41,9 @@ public sealed class LinkServer : IAsyncDisposable
 
     public int Port { get; private set; }
 
-    public async Task StartAsync(X509Certificate2 cert, int port)
+    public Task StartAsync(X509Certificate2 cert, int port) => StartAsync(cert, port, null);
+
+    public async Task StartAsync(X509Certificate2 cert, int port, IPAddress? bindTo)
     {
         if (cert is null) throw new ArgumentNullException(nameof(cert), "HTTPS certificate required; plain HTTP is not supported.");
         if (!cert.HasPrivateKey) throw new ArgumentException("Certificate has no private key.", nameof(cert));
@@ -51,7 +53,7 @@ public sealed class LinkServer : IAsyncDisposable
         {
             k.AddServerHeader = false;
             k.Limits.MaxRequestBodySize = MaxUploadBytes;
-            k.Listen(IPAddress.Any, port, o =>
+            k.Listen(bindTo ?? IPAddress.Any, port, o =>
             {
                 o.Protocols = HttpProtocols.Http1;
                 o.UseHttps(cert);
