@@ -27,6 +27,7 @@ public sealed class MainForm : Form
     private readonly Button _startButton = new() { Text = "Start mirroring", AutoSize = true };
     private readonly Button _stopButton = new() { Text = "Stop", AutoSize = true, Enabled = false };
     private readonly Button _downloadButton = new() { Text = "Download engine", AutoSize = true };
+    private readonly Button _linkButton = new() { Text = "iPhone Link...", AutoSize = true };
     private readonly ProgressBar _progress = new() { Width = 420, Visible = false };
     private readonly Label _progressLabel = new() { AutoSize = true, Visible = false };
     private readonly TextBox _nameBox = new() { Width = 180 };
@@ -91,7 +92,7 @@ public sealed class MainForm : Form
         root.Controls.Add(_detailLabel, 0, 1);
 
         var buttons = new FlowLayoutPanel { AutoSize = true, FlowDirection = FlowDirection.LeftToRight };
-        buttons.Controls.AddRange(new Control[] { _startButton, _stopButton, _downloadButton });
+        buttons.Controls.AddRange(new Control[] { _startButton, _stopButton, _downloadButton, _linkButton });
         root.Controls.Add(buttons, 0, 2);
 
         var progressPanel = new FlowLayoutPanel { AutoSize = true, FlowDirection = FlowDirection.LeftToRight };
@@ -150,6 +151,7 @@ public sealed class MainForm : Form
         _startButton.Click += (_, _) => StartMirroring();
         _stopButton.Click += (_, _) => StopMirroring();
         _downloadButton.Click += async (_, _) => await DownloadEngineAsync();
+        _linkButton.Click += (_, _) => { using var f = new LinkForm(new AirGlass.Link.NoCertificateProvider()); f.ShowDialog(this); };
         copyLog.Click += (_, _) =>
         {
             if (_logBox.TextLength > 0) Clipboard.SetText(_logBox.Text);
