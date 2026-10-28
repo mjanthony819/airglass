@@ -1,0 +1,30 @@
+name: CI (build and test)
+
+on:
+  push:
+    branches: [airglass-link]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Run unit and server tests
+        run: dotnet test AirGlass.sln -c Release
+      - name: Publish single-file app (no release, no upload)
+        run: |
+          dotnet publish src/AirGlass -c Release -r win-x64 --self-contained `
+            -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+      - name: Check publish output
+        shell: pwsh
+        run: |
+          if (!(Test-Path publish/AirGlass.exe)) { Write-Error "AirGlass.exe missing"; exit 1 }
+          "AirGlass.exe size: {0:N1} MB" -f ((Get-Item publish/AirGlass.exe).Length / 1MB)
