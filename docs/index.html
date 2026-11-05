@@ -22,12 +22,12 @@ if(!t){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light
 document.documentElement.setAttribute('data-theme',t)})();
 </script>
 <style>
-:root{--bg:#fdfdfc;--bg-soft:#f5f5f2;--ink:#171a21;--ink-2:#5a6070;--line:#e6e4de;--accent:#2f5fe0;--accent-ink:#2f5fe0;--card:#ffffff;--shadow:0 1px 2px rgba(23,26,33,.05),0 8px 32px rgba(23,26,33,.06)}
-[data-theme="dark"]{--bg:#0b0e14;--bg-soft:#10141d;--ink:#e8eaf1;--ink-2:#9aa2b5;--line:#232936;--accent:#6f93ff;--accent-ink:#8aa7ff;--card:#12161f;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 32px rgba(0,0,0,.35)}
+:root{--bg:#F4EDE0;--bg-soft:#EDE3D2;--ink:#14213D;--ink-2:#4E5875;--line:#E0D4BE;--accent:#FF6B5B;--accent-ink:#D94835;--card:#FFFDF6;--shadow:0 1px 2px rgba(23,26,33,.05),0 8px 32px rgba(23,26,33,.06)}
+[data-theme="dark"]{--bg:#14213D;--bg-soft:#1B2A4A;--ink:#F4EDE0;--ink-2:#C0B59E;--line:#2E4066;--accent:#FF6B5B;--accent-ink:#FF8A7D;--card:#1B2A4A;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 32px rgba(0,0,0,.35)}
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{font-family:'Instrument Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:16.5px;-webkit-font-smoothing:antialiased;transition:background .25s,color .25s}
-::selection{background:var(--accent);color:#fff}
+::selection{background:var(--accent);color:#14213D}
 .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
 a{color:var(--accent-ink);text-decoration:none}
 a:hover{text-decoration:underline}
@@ -59,8 +59,8 @@ h1 em{font-style:italic;font-weight:400;color:var(--accent-ink)}
 .cta{display:flex;gap:14px;margin-top:36px;flex-wrap:wrap;align-items:center}
 .btn{display:inline-flex;align-items:center;gap:9px;padding:13px 24px;border-radius:999px;font-weight:600;font-size:15.5px;transition:transform .15s,box-shadow .15s}
 .btn:hover{text-decoration:none;transform:translateY(-1px)}
-.btn.primary{background:var(--accent);color:#fff;box-shadow:0 4px 18px color-mix(in srgb,var(--accent) 35%,transparent)}
-[data-theme="dark"] .btn.primary{color:#0b0e14}
+.btn.primary{background:var(--accent);color:#14213D;box-shadow:0 4px 18px color-mix(in srgb,var(--accent) 35%,transparent)}
+[data-theme="dark"] .btn.primary{color:#14213D}
 .btn.ghost{border:1px solid var(--line);color:var(--ink);background:var(--card)}
 .btn.ghost:hover{border-color:var(--ink-2)}
 .meta{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink-2);margin-top:16px}
